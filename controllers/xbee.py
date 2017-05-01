@@ -34,12 +34,8 @@ class XBeeController:
         for subscription in subscriptions:
             # We need to handle bound methods different than regular functions
             # Bound methods will require an extra 'caller' value when they are subscribed
-            if subscription['caller'] == None:
-                # A regular function just needs the parameters we want to pass to the callback
-                subscription['callback'](subscription['message'], packet)
-            else:
-                # A bound method needs a reference to the object it is bound to passed as the self argument
-                subscription['callback'](subscription['caller'], subscription['message'], packet)
+            # A regular function just needs the parameters we want to pass to the callback
+            subscription['callback'](subscription['message'], packet)
 
     """
     Subscribe a function or bound method to a received XBee message
@@ -72,7 +68,6 @@ class XBeeController:
     Read basic configuration data from the connected XBee
     """
     def query_parameters(self):
-        self.subscribe(RXMessages.at_response, self.print_query_response, self)
         self.xbee.send('at', command=b'ID', frame_id=b'\x01')
         self.xbee.send('at', command=b'SH', frame_id=b'\x01')
         self.xbee.send('at', command=b'SL', frame_id=b'\x01')
@@ -86,7 +81,7 @@ class XBeeController:
         self.serial.close()
 
     def print_query_response(self, name, packet):
-        print("%s - %s" % (name, packet))
+        print("XBee %s - %s" % (name, packet))
 
 """
 RXMessages stores the possible API message frames that can be received from an XBee
