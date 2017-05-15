@@ -3,8 +3,6 @@ matplotlib.use('TkAgg')
 
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-# implement the default mpl key bindings
-from matplotlib.backend_bases import key_press_handler
 
 from matplotlib.figure import Figure
 import matplotlib.pyplot
@@ -24,22 +22,17 @@ class GraphFrame(tkinter.Frame):
         self.parent = parent
         self.xbee_controller = xbee_controller
 
-        fig, ax = matplotlib.pyplot.subplots()
-        scope = graph.Scope(ax)
+        fig = matplotlib.pyplot.Figure()
 
-        # pass a generator in "emitter" to produce data for the update func
-        ani = matplotlib.animation.FuncAnimation(fig, scope.update, self.emitter, interval=10,
-                                      blit=True)
-        # a tk.DrawingArea
-        self.canvas = FigureCanvasTkAgg(fig, master=self)
-        self.canvas.show()
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        x = numpy.arange(0, 2 * numpy.pi, 0.01)  # x-array
 
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
-        self.toolbar.update()
-        self.canvas._tkcanvas.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        def animate(i):
+            line.set_ydata(numpy.sin(x + i / 10.0))  # update the data
+            return line,
 
-    def emitter(self, probability=0.03):
-        'return a random value with probability p, else 0'
-        while True:
-            yield 1.0
+        canvas = FigureCanvasTkAgg(fig, master=self)
+        canvas.get_tk_widget().grid(column=0, row=1)
+
+        ax = fig.add_subplot(111)
+        line, = ax.plot(x, numpy.sin(x))
+        ani = matplotlib.animation.FuncAnimation(fig, animate, numpy.arange(1, 200), blit=False)
