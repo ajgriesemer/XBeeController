@@ -21,18 +21,21 @@ class GraphFrame(tkinter.Frame):
         tkinter.Frame.__init__(self, parent)
         self.parent = parent
         self.xbee_controller = xbee_controller
-
+        self.xbee_controller.subscribe(xbee.RXMessages.rx_io_data, self.callback)
         fig = matplotlib.pyplot.Figure()
 
-        x = numpy.arange(0, 2 * numpy.pi, 0.01)  # x-array
-
-        def animate(i):
-            line.set_ydata(numpy.sin(x + i / 10.0))  # update the data
-            return line,
+        self.x = numpy.arange(0, 2 * numpy.pi, 0.01)  # x-array
 
         canvas = FigureCanvasTkAgg(fig, master=self)
         canvas.get_tk_widget().grid(column=0, row=1)
 
         ax = fig.add_subplot(111)
-        line, = ax.plot(x, numpy.sin(x))
-        ani = matplotlib.animation.FuncAnimation(fig, animate, numpy.arange(1, 200), blit=False)
+        self.line, = ax.plot(self.x, numpy.sin(self.x))
+        self.ani = matplotlib.animation.FuncAnimation(fig, self.animate, numpy.arange(1, 200), blit=False)
+
+    def animate(self, i):
+        self.line.set_ydata(numpy.sin(self.x + i / 10.0))  # update the data
+        return self.line,
+
+    def callback(self, name, packet):
+        print("Graph %s - %s" % (name, packet))
